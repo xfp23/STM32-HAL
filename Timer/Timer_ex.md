@@ -11,7 +11,7 @@
 
 ### 计算公式：
 
-$T = \frac{(ARR + 1) \times (PSC + 1)}{f_{TIM}}$
+$$T = \frac{(ARR + 1) \times (PSC + 1)}{f_{TIM}}$$
 
 其中：
 - \( T \) ：定时器定时周期（单位：秒）
