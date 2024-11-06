@@ -4,3 +4,106 @@
 # 版权信息
 
 © 2024 . 未经许可不得复制、修改或分发。 此文献为 [小風的藏書閣](https://t.me/xfp2333) 所有。
+
+---
+
+# STM32 HARDWARE I2C
+
+# CubeMX配置
+
+1. 打开`Connectivity`选项卡，选择要使用的I2C资源
+
+2. 选择I2C 工作模式
+
+-----------|
+I2C | 标准I2C工作模式 (常用)
+SMBus-Alert-mode | 
+SMBus-two-wire-Interface | 系统管理总线
+
+3. I2C参数设置
+
+
+
+### **I2C 主机设置**
+
+| **Master Features** | **I2C 主机参数**         |
+|---------------------|--------------------------|
+| **I2C Speed Mode**   | **标准速度模式** (Standard Mode) <= 100kbps |
+|                     | **快速模式** (Fast Mode) <= 400kbps |
+| **I2C Clock Speed (Hz)** | 波特率 | 一般填最大，400k |
+| **Fast Mode Duty Cycle** | 快速模式下时钟信号的占空比 |
+|                     | **Duty cycle Tlow/Thigh = 2** | 低电平占两份，高电平占一份（常用） |
+|                     | **Duty cycle Tlow/Thigh = 16/9** | 低电平占16份，高电平占9份 |
+
+---
+
+### **I2C 从机设置**
+
+| **Slave Features**  | **I2C 从机参数**         |
+|---------------------|--------------------------|
+| **I2C Addressing Mode** | 地址模式 |
+|                     | **7-bit Addressing Mode** | 7位地址模式 |
+|                     | **10-bit Addressing Mode** | 10位地址模式 |
+| **I2C Acknowledge**   | 响应设置 |
+|                     | **Acknowledge Enable** | 启用应答 |
+|                     | **Acknowledge Disable** | 禁用应答 |
+| **I2C General Call**  | 广播地址模式 |
+|                     | **Enable** | 启用 |
+|                     | **Disable** | 禁用 |
+| **I2C Duty Cycle**    | 快速模式下的时钟占空比 |
+|                     | **Duty cycle Tlow/Thigh = 2** | 低电平占两份，高电平占一份（常用） |
+|                     | **Duty cycle Tlow/Thigh = 16/9** | 低电平占16份，高电平占9份 |
+
+---
+
+
+# 初始化API
+
+1. I2C句柄：
+```c
+I2C_HandleTypeDef;
+```
+
+# I2C操作API
+### **I2C 读写API**
+
+| **API** | **描述** |
+|--------|----------|
+| `HAL_I2C_Master_Transmit` | 主机传输数据到从机 |
+| `HAL_I2C_Master_Receive` | 主机从从机接收数据 |
+| `HAL_I2C_Slave_Transmit` | 从机传输数据到主机 |
+| `HAL_I2C_Slave_Receive` | 从机从主机接收数据 |
+
+1. API原型:
+
+- 主机传输数据到从机
+
+```c
+/**
+ * @brief I2C发数据
+ * @param i2c总线句柄
+ * @param 从机地址
+ * @param 要发送的数据的地址
+ * @param 发送的数据的字节大小
+ * @param 超时时间 ms 不使用传HAL_MAX_DELAY
+ * @return HAL_OK HAL_ERROR HAL_BUSY HAL_TIMEOUT
+ */
+HAL_StatusTypedef HAL_I2C_Master_Transmit(I2C_HandleTypeDef *h2c,uint16_t devaddress,uint8_t *data,uint16_t size,uint32_t Timeout);
+```
+
+- 主机接收从机的信息
+```c
+
+/**
+ * @brief I2C发数据
+ * @param i2c总线句柄
+ * @param 从机地址
+ * @param 要接收的数据的缓冲区地址
+ * @param 要接收的数据的字节大小
+ * @param 超时时间 ms 不使用传HAL_MAX_DELAY
+ * @return HAL_OK HAL_ERROR HAL_BUSY HAL_TIMEOUT
+ */
+HAL_StatusTypedef HAL_I2C_Master_Receive(I2C_HandleTypeDef *h2c,uint16_t devaddress,uint8_t *data,uint16_t size,uint32_t Timeout);
+
+```
+
