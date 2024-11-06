@@ -25,13 +25,14 @@
 
 - `GPIO mode` ： 选择引脚模式 ：
 
-```md
-output push-pull - 输出推挽
-output open-drain - 输出开漏
-GPIO PUll-up/Pull-down - 选择上下拉
-Maximum outputspeed - 设置最大输出速度，中高低
-user_label - 设置用户自定义引脚标签
-```
+| **参数**                   | **说明**                      |
+|----------------------------|-------------------------------|
+| **output push-pull**        | 输出推挽（常见模式）           |
+| **output open-drain**       | 输出开漏                       |
+| **GPIO Pull-up/Pull-down**  | 选择上下拉                     |
+| **Maximum output speed**   | 设置最大输出速度，中速、高速、低速 |
+| **user_label**              | 设置用户自定义引脚标签         |
+
 
 3. 生成MDK工程
 
@@ -129,6 +130,38 @@ GPIO_InitStruct.Mode = GPIO_MODE_ANALOG; // 设置为模拟模式
 GPIO_InitStruct.Pull = GPIO_NOPULL;      // 设置无上下拉
 HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);  // 初始化 GPIOA 的 Pin 0
 
+```
+
+- 外部中断配置
+抱歉给您带来困扰！我明白了，下面是您要求的宏和示例代码块：
+
+### GPIO 相关的宏定义
+
+```c
+#define GPIO_MODE_IT_RISING          0x10100000U    // 上升沿触发中断
+#define GPIO_MODE_IT_FALLING         0x10200000U    // 下降沿触发中断
+#define GPIO_MODE_IT_RISING_FALLING  0x10300000U    // 上升沿和下降沿触发中断
+
+#define GPIO_PULLUP                  0x00000001U    // 上拉
+#define GPIO_PULLDOWN                0x00000002U    // 下拉
+#define GPIO_NOPULL                  0x00000000U    // 无上下拉
+```
+
+### 示例代码：配置 GPIO 为边沿触发
+
+```c
+GPIO_InitTypeDef GPIO_InitStruct = {0};
+
+// 配置 GPIO 为输入模式，上升沿和下降沿触发中断
+GPIO_InitStruct.Pin = GPIO_PIN_0;                          // 选择引脚（GPIOA Pin 0）
+GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;        // 设置为上升沿和下降沿触发
+GPIO_InitStruct.Pull = GPIO_NOPULL;                         // 设置无上下拉电阻
+GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;               // 设置为低速
+HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);                    // 初始化 GPIOA 的 Pin 0
+
+// 配置 NVIC 中断优先级
+HAL_NVIC_SetPriority(EXTI0_IRQn, 0, 0);                   // 设置中断优先级
+HAL_NVIC_EnableIRQ(EXTI0_IRQn);                            // 使能外部中断
 ```
 
 ## 操作GPIO

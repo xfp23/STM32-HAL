@@ -15,10 +15,17 @@
 
 2. 选择I2C 工作模式
 
------------|
-I2C | 标准I2C工作模式 (常用)
-SMBus-Alert-mode | 
-SMBus-two-wire-Interface | 系统管理总线
+
+### **I2C 配置模式**
+
+| **Mode**                      | **Description**                   |
+|-------------------------------|-----------------------------------|
+| **I2C**                        | 标准 I2C 工作模式（常用）            |
+| **SMBus-Alert-mode**           | SMBus 警报模式                      |
+| **SMBus-two-wire-Interface**   | 系统管理总线（SMBus 两线接口）        |
+
+---
+
 
 3. I2C参数设置
 

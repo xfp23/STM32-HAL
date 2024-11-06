@@ -3,81 +3,91 @@
 
 ## CubeMX 配置
 
-1. **打开 NVIC 选项卡**
+1. 选择System Core ，打开NVIC选项卡
 
-   - 在 CubeMX 中，选择 **Configuration** -> **NVIC** 选项卡。
-   - 在此界面可以看到所有中断控制器的配置项。
+2. 根据自己的需要选择要使能的中断，选择在`Enable`选项栏使能 
 
-2. **选择外部中断**
 
-   - 找到需要配置的外部中断（例如 `EXTI0`, `EXTI1`, 等）。
-   - 勾选相应的 **Enabled** 复选框，启用中断。
+# 初始化API
 
-3. **设置优先级**
 
-   - 在 `Priority` 列下选择所需的优先级。
-   - STM32 中的中断优先级由两部分组成：**抢占优先级** 和 **子优先级**。可以根据需要设置。
 
-4. **配置触发条件**
+# 串口中断处理数据 :
 
-   - 配置中断触发的方式，如 **上升沿**、**下降沿** 或 **双边沿**。
-   - 在 **GPIO** 配置中选择相应的触发模式，例如：上升沿触发、下降沿触发或双边沿触发。
+- 使用中断接收数据
+```c
+/**
+ * @brief 使用中断的方式接收一定量的数据
+ * @param 串口句柄
+ * @param 接收数据的缓冲区地址
+ * @param 数据大小，单位：字节
+ * @return HAL_OK HAL_ERROR 
+ */
+HAL_StatusTypeDef HAL_UART_Receive_IT(UART_HandleTypedef *huart,uint8_t *data,uint16_t size);
 
-5. **生成代码**
+```
 
-   - 配置完成后，点击 **Project** 生成代码。
-   - CubeMX 将自动生成所有的 NVIC 配置代码及初始化代码。
-
-## 中断服务函数
-
-在中断回调函数中编写处理逻辑。示例代码如下：
+- 回调函数,当上面的函数接收数据完成之后单片机会调用下方的回调函数
 
 ```c
-// 外部中断处理函数
-void EXTI0_IRQHandler(void)
+void HAL_UART_RxCpltCallback(UART_HandleTypedef * huart);
+```
+
+- 执行流程说明：
+
+1. 首先将`HAL_UART_Receive_IT`函数放进main函数的主循环之外，相当于`Arduino`的`setup()`函数里
+
+2. 在main函数之外编写`HAL_UART_RxCpltCallback()`函数的定义，用于函数实现
+
+- 回调函数示例: 接收不定长度的数据
+```c
+HAL_UART_Receive_IT(&huart,buffer,1); // 想要不定长度每次接收一个字节然后在回调函数中写存储信息逻辑即可
+
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
-    // 检查是否为外部中断线0触发
-    if(__HAL_GPIO_EXTI_GET_IT(GPIO_PIN_0) != RESET)
+    // 判断哪个串口触发的中断
+    if (huart->Instance == USART1)
     {
-        // 清除中断标志位
-        __HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_0);
-        
-        // 用户自定义的中断处理代码
-        // 例如：切换LED状态
-        HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0);
+        // 将接收到的数据存入缓冲区
+        data_buffer[data_index++] = huart->pRxBuffPtr[0]; 
+
+        // 如果缓冲区未满或数据未结束，则继续接收
+        if (data_index < sizeof(data_buffer))
+        {
+            HAL_UART_Receive_IT(huart, huart->pRxBuffPtr, 1);  // 继续接收一个字节
+        }
+        else
+        {
+            // 数据缓冲区已满，进行处理（例如数据解析等）
+            process_received_data();
+        }
     }
 }
 ```
 
-### 其他常用操作
+# 外部中断的使用
 
-1. **使能外部中断**
-   使用 `HAL_NVIC_EnableIRQ()` 函数使能中断。
+- 在CubeMX配置完之后，需要手动写一个对应的中断函数实现
 
-   ```c
-   HAL_NVIC_EnableIRQ(EXTI0_IRQn);
-   ```
-
-2. **禁用外部中断**
-   使用 `HAL_NVIC_DisableIRQ()` 函数禁用中断。
-
-   ```c
-   HAL_NVIC_DisableIRQ(EXTI0_IRQn);
-   ```
-
-3. **设置中断优先级**
-   使用 `HAL_NVIC_SetPriority()` 函数设置中断的优先级。
-
-   ```c
-   HAL_NVIC_SetPriority(EXTI0_IRQn, 1, 0);  // 抢占优先级1，子优先级0
-   ```
-
-## 其他配置项
-
-- **中断优先级**：根据需求调整不同外设的优先级，确保优先级合理。
-- **外部中断线配置**：可以通过配置 `GPIO` 引脚来设置触发中断的条件（上升沿、下降沿或双边沿）。
-
+- 每个中断线都有一个对应的`EXTIx_IRQHandler`
 ```c
-// 使能外部中断触发条件
-HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_0);  // 处理外部中断
+void EXTI0_IRQHandler(void)
+{
+    // 检查是否是 PA0 引脚触发了中断
+    if (__HAL_GPIO_EXTI_GET_IT(GPIO_PIN_0) != RESET) {
+        // 清除中断标志
+        HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_0);
+
+        // 执行中断处理（比如点亮 LED）
+        HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0);  // 切换 LED 状态
+    }
+
+    // 你可以添加更多引脚的判断，处理其他外部中断
+    if (__HAL_GPIO_EXTI_GET_IT(GPIO_PIN_1) != RESET) {
+        // 清除中断标志
+        HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_1);
+        
+        // 执行其它引脚的处理
+    }
+}
 ```
