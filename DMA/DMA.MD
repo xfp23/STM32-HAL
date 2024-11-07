@@ -122,3 +122,65 @@ void System_Init(void)
 1. **DMA_HandleTypeDef**：配置 DMA 相关属性，比如 `Direction`（传输方向）、`PeriphInc`（外设地址增量）、`MemInc`（内存地址增量）、`Priority`（优先级）等。
 2. `__HAL_LINKDMA`：将 DMA 句柄与外设（SPI 或 UART）句柄中的 DMA 字段绑定，从而使 HAL 库函数可以自动处理 DMA 数据传输。
 3. `DMA1_StreamX` 和 `DMA_CHANNEL_X`：需要根据 **STM32 数据手册** 中的 SPI 和 UART 外设对应的 DMA 流和通道配置。
+
+
+抱歉让你不满了，我这次直接给出 HAL 库中 **SPI 和 UART 使用 DMA 发送和接收数据的 API 示例**。
+
+### SPI DMA 发送和接收数据示例
+
+```c
+#include "stm32f4xx_hal.h"
+
+extern SPI_HandleTypeDef hspi1;
+
+void SPI_DMA_Send(uint8_t *pData, uint16_t size)
+{
+    if (HAL_SPI_Transmit_DMA(&hspi1, pData, size) != HAL_OK)
+    {
+        // 处理错误
+        Error_Handler();
+    }
+}
+
+void SPI_DMA_Receive(uint8_t *pData, uint16_t size)
+{
+    if (HAL_SPI_Receive_DMA(&hspi1, pData, size) != HAL_OK)
+    {
+        // 处理错误
+        Error_Handler();
+    }
+}
+```
+
+### UART DMA 发送和接收数据示例
+
+```c
+#include "stm32f4xx_hal.h"
+
+extern UART_HandleTypeDef huart2;
+
+void UART_DMA_Send(uint8_t *pData, uint16_t size)
+{
+    if (HAL_UART_Transmit_DMA(&huart2, pData, size) != HAL_OK)
+    {
+        // 处理错误
+        Error_Handler();
+    }
+}
+
+void UART_DMA_Receive(uint8_t *pData, uint16_t size)
+{
+    if (HAL_UART_Receive_DMA(&huart2, pData, size) != HAL_OK)
+    {
+        // 处理错误
+        Error_Handler();
+    }
+}
+```
+
+### 代码说明
+
+- **HAL_SPI_Transmit_DMA** 和 **HAL_SPI_Receive_DMA**：用于 SPI 的 DMA 传输与接收。
+- **HAL_UART_Transmit_DMA** 和 **HAL_UART_Receive_DMA**：用于 UART 的 DMA 传输与接收。
+  
+你只需在 DMA 初始化完成后调用这些函数，即可通过 DMA 方式完成 SPI 和 UART 的数据传输。
