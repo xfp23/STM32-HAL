@@ -119,3 +119,109 @@ void MX_ADC1_Init(void) {
 
 
 # ADC操作API
+
+
+
+1. **启动常规序列**  
+```c
+HAL_ADC_Start(ADC_HandleTypeDef *hadc);
+```
+
+2. **等待转换完成**  
+```c
+HAL_StatusTypeDef HAL_ADC_PollForConversion(ADC_HandleTypeDef *hadc, uint32_t Timeout);
+```
+
+3. **获取结果**  
+```c
+uint32_t HAL_ADC_GetValue(ADC_HandleTypeDef *hadc);
+```
+
+4. 转换电压 ： 
+```c
+//最终的电压结果是:
+float vol = 原始值 * 3.3/4095; 
+
+```
+
+# demo示例
+
+```c
+#include "stm32f4xx_hal.h"
+
+ADC_HandleTypeDef hadc1;
+
+void ADC_Init(void)
+{
+    // 配置 ADC 的初始化结构体（例如通道、分辨率、采样时间等）
+    __HAL_RCC_ADC1_CLK_ENABLE();  // 使能 ADC1 时钟
+
+    hadc1.Instance = ADC1;
+    hadc1.Init.Resolution = ADC_RESOLUTION_12B;      // 12位分辨率
+    hadc1.Init.ScanConvMode = ADC_SCAN_DISABLE;       // 禁用扫描模式
+    hadc1.Init.ContinuousConvMode = DISABLE;          // 禁用连续转换模式
+    hadc1.Init.DiscontinuousConvMode = DISABLE;       // 禁用不连续转换模式
+    hadc1.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;  // 软件触发
+    hadc1.Init.DataAlign = ADC_DATAALIGN_RIGHT;       // 数据右对齐
+    hadc1.Init.NbrOfConversion = 1;                    // 只进行一次转换
+    hadc1.Init.DMAContinuousRequests = DISABLE;        // 禁用DMA
+    hadc1.Init.EOCSelection = ADC_EOC_SINGLE_CONV;    // 单次转换完成时生成结束标志
+
+    // 初始化 ADC
+    if (HAL_ADC_Init(&hadc1) != HAL_OK)
+    {
+        // 错误处理
+        Error_Handler();
+    }
+}
+
+uint32_t ADC_SingleConversion(void)
+{
+    // 启动 ADC 转换
+    if (HAL_ADC_Start(&hadc1) != HAL_OK)
+    {
+        // 启动失败，错误处理
+        Error_Handler();
+    }
+
+    // 等待转换完成
+    if (HAL_ADC_PollForConversion(&hadc1, 100) != HAL_OK)  // 100 毫秒超时
+    {
+        // 转换超时，错误处理
+        Error_Handler();
+    }
+
+    // 获取转换结果
+    uint32_t adc_value = HAL_ADC_GetValue(&hadc1);
+
+    // 关闭 ADC
+    HAL_ADC_Stop(&hadc1);
+
+    return adc_value;
+}
+
+void Error_Handler(void)
+{
+    // 错误处理代码
+    while (1)
+    {
+        // 可以在此处设置 LED 灯闪烁或其他调试机制
+    }
+}
+
+int main(void)
+{
+    HAL_Init();           // 初始化 HAL 库
+    ADC_Init();           // 初始化 ADC
+    uint32_t adc_result = ADC_SingleConversion();  // 获取 ADC 单次转换结果
+
+    // 可以将 adc_result 用于后续处理
+    // 例如通过串口输出，或者控制外设
+    while (1)
+    {
+        // 主循环代码
+    }
+}
+
+
+```
