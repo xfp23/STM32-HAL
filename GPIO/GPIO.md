@@ -192,4 +192,4 @@ HAL_Daly(uint32_t ms);
 
 ` 由于外部中断又要去MX配置，所以此篇章到此结束`
 
-[此处查看GPIO外部中断](./GPIONVIC.MD)
+[此处查看GPIO外部中断](/NVIC/NVIC.MD)
