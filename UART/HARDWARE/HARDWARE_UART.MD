@@ -54,6 +54,62 @@ UART_HandleTypedef; // 串口句柄
 ```
 
 
+2. 初始化示例代码:
+```c
+#include "stm32f1xx_hal.h"  // 请根据芯片型号替换 HAL 库头文件
+
+UART_HandleTypeDef huart1;
+
+void MX_USART1_UART_Init(void) {
+    huart1.Instance = USART1;  // 选择 USART1 作为串口外设实例
+
+    // 波特率设置
+    // 常见波特率：9600、115200 等
+    huart1.Init.BaudRate = 115200;
+
+    // 字长设置
+    // UART_WORDLENGTH_8B：8 位数据帧
+    // UART_WORDLENGTH_9B：9 位数据帧
+    huart1.Init.WordLength = UART_WORDLENGTH_8B;
+
+    // 停止位设置
+    // UART_STOPBITS_1：1 个停止位
+    // UART_STOPBITS_2：2 个停止位
+    huart1.Init.StopBits = UART_STOPBITS_1;
+
+    // 校验设置
+    // UART_PARITY_NONE：无校验
+    // UART_PARITY_EVEN：偶校验
+    // UART_PARITY_ODD：奇校验
+    huart1.Init.Parity = UART_PARITY_NONE;
+
+    // 模式设置
+    // UART_MODE_TX_RX：发送和接收模式
+    // UART_MODE_TX：仅发送模式
+    // UART_MODE_RX：仅接收模式
+    huart1.Init.Mode = UART_MODE_TX_RX;
+
+    // 硬件流控制设置
+    // UART_HWCONTROL_NONE：无硬件流控制
+    // UART_HWCONTROL_RTS：RTS 流控制
+    // UART_HWCONTROL_CTS：CTS 流控制
+    // UART_HWCONTROL_RTS_CTS：RTS 和 CTS 流控制
+    huart1.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+
+    // 过采样模式
+    // UART_OVERSAMPLING_16：16 倍过采样
+    // UART_OVERSAMPLING_8：8 倍过采样（某些型号不支持）
+    huart1.Init.OverSampling = UART_OVERSAMPLING_16;
+
+    // 初始化 UART 并检查是否成功
+    if (HAL_UART_Init(&huart1) != HAL_OK) {
+        // 初始化失败时的错误处理
+        Error_Handler();
+    }
+}
+
+
+```
 # UART 操作API
 
 - 发送数据 

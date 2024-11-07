@@ -66,9 +66,84 @@
 
 # 初始化API
 
-- spi句柄类型: 
+1. spi句柄类型: 
 ```
 SPI_HandleTypedef
+```
+
+2. 初始化示例
+```c
+#include "stm32f1xx_hal.h" // 请根据芯片型号替换 HAL 库头文件
+
+SPI_HandleTypeDef hspi1;
+
+void MX_SPI1_Init(void) {
+    hspi1.Instance = SPI1;  // 使用 SPI1 作为外设实例
+
+    // SPI 模式设置
+    // SPI_MODE_MASTER：主模式
+    // SPI_MODE_SLAVE：从模式
+    hspi1.Init.Mode = SPI_MODE_MASTER;
+
+    // SPI 数据传输方向
+    // SPI_DIRECTION_2LINES：全双工（两线）
+    // SPI_DIRECTION_2LINES_RXONLY：全双工，仅接收
+    // SPI_DIRECTION_1LINE：单线半双工
+    hspi1.Init.Direction = SPI_DIRECTION_2LINES;
+
+    // SPI 数据宽度
+    // SPI_DATASIZE_8BIT：8 位数据帧
+    // SPI_DATASIZE_16BIT：16 位数据帧
+    hspi1.Init.DataSize = SPI_DATASIZE_8BIT;
+
+    // SPI 时钟极性
+    // SPI_POLARITY_LOW：空闲状态下时钟线为低电平（CPOL = 0）
+    // SPI_POLARITY_HIGH：空闲状态下时钟线为高电平（CPOL = 1）
+    hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
+
+    // SPI 时钟相位
+    // SPI_PHASE_1EDGE：第一个时钟边沿采样数据（CPHA = 0）
+    // SPI_PHASE_2EDGE：第二个时钟边沿采样数据（CPHA = 1）
+    hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
+
+    // NSS（片选）引脚管理
+    // SPI_NSS_SOFT：软件管理 NSS 信号
+    // SPI_NSS_HARD_INPUT：硬件管理，作为从设备时使用
+    // SPI_NSS_HARD_OUTPUT：硬件管理，作为主设备时使用
+    hspi1.Init.NSS = SPI_NSS_SOFT;
+
+    // 波特率分频
+    // 可用值：SPI_BAUDRATEPRESCALER_2, SPI_BAUDRATEPRESCALER_4, 
+    // SPI_BAUDRATEPRESCALER_8, SPI_BAUDRATEPRESCALER_16, 
+    // SPI_BAUDRATEPRESCALER_32, SPI_BAUDRATEPRESCALER_64, 
+    // SPI_BAUDRATEPRESCALER_128, SPI_BAUDRATEPRESCALER_256
+    // 分频值越小，传输速率越高
+    hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_8;
+
+    // 数据位序
+    // SPI_FIRSTBIT_MSB：高位在前（MSB first）
+    // SPI_FIRSTBIT_LSB：低位在前（LSB first）
+    hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
+
+    // TI 模式使能
+    // SPI_TIMODE_DISABLE：禁用 TI 模式
+    // SPI_TIMODE_ENABLE：启用 TI 模式
+    hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
+
+    // CRC 校验使能
+    // SPI_CRCCALCULATION_DISABLE：禁用 CRC 校验
+    // SPI_CRCCALCULATION_ENABLE：启用 CRC 校验
+    hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
+
+    // CRC 多项式值，仅在启用 CRC 校验时使用
+    hspi1.Init.CRCPolynomial = 10;
+
+    if (HAL_SPI_Init(&hspi1) != HAL_OK) {
+        // 初始化错误处理
+        Error_Handler();
+    }
+}
+
 ```
 # SPI操作API
 

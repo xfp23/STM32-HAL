@@ -70,7 +70,57 @@
 ```c
 I2C_HandleTypeDef;
 ```
+2. I2C初始化代码:
+```c
+#include "stm32f1xx_hal.h"  // 请根据芯片型号替换 HAL 库头文件
 
+I2C_HandleTypeDef hi2c1;
+
+void MX_I2C1_Init(void) {
+    hi2c1.Instance = I2C1;  // 选择 I2C1 作为 I2C 外设实例
+
+    // 时钟速度设置
+    // 常用值：100000 (标准模式，100kHz)，400000 (快速模式，400kHz)
+    hi2c1.Init.ClockSpeed = 100000;
+
+    // 地址模式设置
+    // I2C_ADDRESSINGMODE_7BIT：7 位地址模式
+    // I2C_ADDRESSINGMODE_10BIT：10 位地址模式
+    hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
+
+    // 双地址模式
+    // I2C_DUALADDRESS_DISABLE：禁用双地址模式
+    // I2C_DUALADDRESS_ENABLE：启用双地址模式
+    hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
+
+    // 第二地址
+    // 如果启用双地址模式，可以设置另一个 7 位或 10 位地址
+    hi2c1.Init.OwnAddress2 = 0;
+
+    // 第二地址掩码
+    // I2C_OA2_NOMASK：不屏蔽第二地址
+    // I2C_OA2_MASK01 至 I2C_OA2_MASK07：用于屏蔽第二地址的位
+    hi2c1.Init.OwnAddress2Masks = I2C_OA2_NOMASK;
+
+    // 通用回呼模式
+    // I2C_GENERALCALL_DISABLE：禁用通用回呼
+    // I2C_GENERALCALL_ENABLE：启用通用回呼
+    hi2c1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
+
+    // 无应答模式
+    // I2C_NOSTRETCH_DISABLE：启用时钟拉伸
+    // I2C_NOSTRETCH_ENABLE：禁用时钟拉伸（在主机模式下无效）
+    hi2c1.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
+
+    // 初始化 I2C 并检查是否成功
+    if (HAL_I2C_Init(&hi2c1) != HAL_OK) {
+        // 初始化失败时的错误处理
+        Error_Handler();
+    }
+}
+
+
+```
 # I2C操作API
 ### **I2C 读写API**
 
