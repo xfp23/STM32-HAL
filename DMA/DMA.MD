@@ -124,8 +124,6 @@ void System_Init(void)
 3. `DMA1_StreamX` 和 `DMA_CHANNEL_X`：需要根据 **STM32 数据手册** 中的 SPI 和 UART 外设对应的 DMA 流和通道配置。
 
 
-抱歉让你不满了，我这次直接给出 HAL 库中 **SPI 和 UART 使用 DMA 发送和接收数据的 API 示例**。
-
 ### SPI DMA 发送和接收数据示例
 
 ```c
@@ -153,6 +151,62 @@ void SPI_DMA_Receive(uint8_t *pData, uint16_t size)
 ```
 
 ### UART DMA 发送和接收数据示例
+
+- 必须按照此方式调用在程序循环前，否则会出现开机收不到数据的情况：
+
+```c
+     HAL_UART_Receive_DMA(&huart1,(uint8_t*)JSON_doc, JSON_SIZE);
+     __HAL_UART_ENABLE_IT(&huart1, UART_IT_IDLE);	
+      HAL_UART_Receive_IT(&huart1,(uint8_t*)JSON_doc, JSON_SIZE);
+void USART1_IRQHandler(void)
+{
+  /* USER CODE BEGIN USART1_IRQn 0 */
+	/* 清理标志位 */
+	if(__HAL_UART_GET_FLAG(&huart1, UART_FLAG_FE) != RESET) 
+	{
+			__HAL_UART_CLEAR_FEFLAG(&huart1);
+	}
+
+	if(__HAL_UART_GET_FLAG(&huart1, UART_FLAG_ORE) != RESET) 
+	{
+			__HAL_UART_CLEAR_OREFLAG(&huart1);
+	}
+
+	if(__HAL_UART_GET_FLAG(&huart1, UART_FLAG_NE) != RESET) 
+	{
+			__HAL_UART_CLEAR_NEFLAG(&huart1);
+	}
+				
+	
+  /* USER CODE END USART1_IRQn 0 */
+  //HAL_UART_IRQHandler(&huart1);
+  /* USER CODE BEGIN USART1_IRQn 1 */
+  HAL_UART_RxCpltCallback(&huart1);
+ HAL_UART_IRQHandler(&huart1);
+  /* USER CODE END USART1_IRQn 1 */
+}
+
+
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+{
+  if (huart->Instance == USART1)
+  {
+    // 检测 UART 空闲中断
+    if (__HAL_UART_GET_FLAG(&huart1, UART_FLAG_IDLE) != RESET)
+    {
+      __HAL_UART_CLEAR_IDLEFLAG(&huart1); // 清除空闲标志位
+      HAL_UART_DMAStop(&huart1);          // 停止 DMA 接收
+      System.flag.Json_flage++;        // 设置标志位
+      //ST_LOG(JSON_doc);
+      HAL_UART_Receive_DMA(&huart1, (uint8_t*)JSON_doc, JSON_SIZE); // 重新开启 DMA 接收
+      enqueue(&JSON_QUEUE,(const char *)JSON_doc); // json入队
+     memset(JSON_doc, 0, JSON_SIZE);
+
+    }
+  }
+}
+
+```
 
 ```c
 #include "stm32f4xx_hal.h"
