@@ -40,9 +40,8 @@ STM32 提供了两种看门狗：
 
    例如：  
    对于 `Prescaler = 64`，`Reload = 0xFFF`（最大值），则计算公式为：
-   \[
-   IWDG\_Time = \frac{{Prescaler \times Reload}}{{LSIRC}} = \frac{{64 \times 0xFFF}}{{40,000}} = 1.6 \text{ seconds}
-   \]
+
+   $\[IWDG\_Time = \frac{{Prescaler \times Reload}}{{LSIRC}} = \frac{{64 \times 0xFFF}}{{40,000}} = 1.6 \tex{seconds\]$ 
 
 ### 2.2 生成代码并查看 IWDG 初始化函数
 
