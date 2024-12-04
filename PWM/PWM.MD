@@ -106,11 +106,12 @@ $
 ---
 
 #### 3. 计算 PSC 和 ARR
-通过公式：
 
-$ \[
+
+\[
 \text{PSC} + 1 = \frac{f_{\text{TimerClock}}}{f_{\text{DesiredTimer}}}
-\]$
+\]
+
 
 选择一个合适的预分频器（PSC），然后通过 ARR 调整 PWM 周期。  
 假设 $\( f_{\text{TimerClock}} = 170 \, \text{MHz} \)，并希望 \( f_{\text{PWM}} = 1 \, \text{kHz} \)$ :
