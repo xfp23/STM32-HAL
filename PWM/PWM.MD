@@ -69,52 +69,99 @@
 | **CHN Polarity**             | 互补输出的极性。设置为 `High` 表示互补输出为正极性，`Low` 表示为负极性，配合死区时间使用。
 
 
+# 配置一个PWM输出
 
-# 初始化一个PWM输出
+## 配置输出频率
+
+在 STM32 中，设置 PWM 的频率需要调整 **定时器的时钟频率** 和 **PWM 的周期（通过 ARR 和 PSC 寄存器）**。
+
+---
+
+### PWM 输出频率的计算公式：
+
+$
+\[
+f_{\text{PWM}} = \frac{f_{\text{TimerClock}}}{(\text{PSC} + 1) \times (\text{ARR} + 1)}
+\]
+$
+
+其中：
+- \( f_{\text{TimerClock}} \) 是定时器的输入时钟频率。
+- \( \text{PSC} \) 是预分频器的值（寄存器值范围：0 ~ 65535）。
+- \( \text{ARR} \) 是自动重装载寄存器的值（寄存器值范围：0 ~ 65535）。
+
+---
+
+### 设置步骤：
+#### 1. 确定时钟源和定时器输入频率
+定时器时钟频率通常来自 APB 时钟（PCLK）。在 STM32 的系统时钟配置中，需确认 APB 总线时钟频率和定时器的倍频关系：
+- 如果 APB 预分频因子为 1，则  $\( f_{\text{TimerClock}} = f_{\text{PCLK}} \)$ 。
+- 如果 APB 预分频因子不为 1，则 $\( f_{\text{TimerClock}} = f_{\text{PCLK}} \times 2 \)$ 。
+
+例如，如果 APB1 总线频率为 170 MHz，APB1 的预分频因子为 1，则定时器的输入时钟频率也是 170 MHz。
+
+---
+
+#### 2. 选择 PWM 的目标频率
+假设需要设置 PWM 频率为 **1 kHz**。
+
+---
+
+#### 3. 计算 PSC 和 ARR
+通过公式：
+
+$
+\[
+\text{PSC} + 1 = \frac{f_{\text{TimerClock}}}{f_{\text{DesiredTimer}}}
+\]
+$
+
+选择一个合适的预分频器（PSC），然后通过 ARR 调整 PWM 周期。  
+假设 $\( f_{\text{TimerClock}} = 170 \, \text{MHz} \)，并希望 \( f_{\text{PWM}} = 1 \, \text{kHz} \)$ :
+
+1. 初步选择 $\( \text{PSC} = 1699 \)$ : 
+$\[
+   f_{\text{Timer}} = \frac{170 \, \text{MHz}}{1699 + 1} = 100 \, \text{kHz}
+   \]
+$
+
+2. 计算 ARR：
+
+$
+\[
+\text{ARR} = \frac{f_{\text{Timer}}}{f_{\text{PWM}}} - 1 = \frac{100 \, \text{kHz}}{1 \, \text{kHz}} - 1 = 99
+\]
+$
+
+最终：
+- $\( \text{PSC} = 1699 \)$ 
+- $\( \text{ARR} = 99 \)$ 
+
+---
+
+#### 4. 配置占空比（CCR）
+占空比通过 **捕获比较寄存器（CCR）** 配置。占空比公式：
+
+$
+\[
+\text{占空比 (\%)} = \frac{\text{CCR}}{\text{ARR} + 1} \times 100
+\]
+$
+
+例如：
+- 设置 $\( \text{CCR} = 50 \)$，占空比为 50%。
+- 设置 $\( \text{CCR} = 25 \)$，占空比为 25%。
+
+---
+
+
+
+## 程序示例:
 
 ```c
-#include "stm32f4xx_hal.h"
 
-// 假设使用 TIM3 和通道 1 (可以根据需要更改)
-TIM_HandleTypeDef htim3;
+// 必须在主循环之前调用此函数使能pwm输出
+    HAL_TIM_PWM_Start(&htim2,TIM_CHANNEL_1);
 
-void PWM_Init()
-{
-    // 1. 开启定时器和GPIO时钟
-    __HAL_RCC_TIM3_CLK_ENABLE();      // 开启 TIM3 时钟
-    __HAL_RCC_GPIOA_CLK_ENABLE();     // 开启 GPIOA 时钟
-    
-    // 2. 配置 PWM 输出引脚
-    GPIO_InitTypeDef GPIO_InitStruct = {0};
-    GPIO_InitStruct.Pin = GPIO_PIN_6;         // 假设 TIM3 CH1 连接到 PA6
-    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;   // 复用推挽模式
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-    GPIO_InitStruct.Alternate = GPIO_AF2_TIM3; // TIM3 复用
-    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-    
-    // 3. 配置定时器
-    htim3.Instance = TIM3;
-    htim3.Init.Prescaler = 72 - 1;            // 假设 72MHz 主频，设置预分频器为 72，PWM 基频 1MHz
-    htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
-    htim3.Init.Period = 1000 - 1;             // PWM 频率 = 1MHz / 1000 = 1kHz
-    htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-    HAL_TIM_PWM_Init(&htim3);
-    
-    // 4. 配置 PWM 输出通道
-    TIM_OC_InitTypeDef sConfigOC = {0};
-    sConfigOC.OCMode = TIM_OCMODE_PWM1;       // 选择 PWM 模式 1
-    sConfigOC.Pulse = 500;                    // 初始占空比为 50%（计数值 500）
-    sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
-    sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
-    HAL_TIM_PWM_ConfigChannel(&htim3, &sConfigOC, TIM_CHANNEL_1);
-    
-    // 5. 启动 PWM 信号输出
-    HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1); // 启动 TIM3 通道 1 的 PWM 输出
-}
-
-
-__HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1, 750); // 设置 TIM3 通道 1 的占空比为 75%
-
-
+//
 ```

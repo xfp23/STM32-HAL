@@ -41,54 +41,40 @@
 
 3. 打开定时器配置页面下的`NVIC`选项卡，使能定时器中断 `update interrupt`
 
-# 初始化API
-
-
-- 初始化例程:
+# 代码部分
 
 ```c
-#include "stm32f4xx_hal.h"
 
-// 定时器句柄
-TIM_HandleTypeDef htim2;
+/**
+*@brief 在主循环开始前必须使能定时器
+*/
+	HAL_TIM_Base_Start_IT(&htim1);
+```
 
-// 定时器初始化函数
-void TIM2_Init(void)
-{
-    // 1. 开启定时器2和RCC的时钟
-    __HAL_RCC_TIM2_CLK_ENABLE();
+-  回调函数实现
 
-    // 2. 配置定时器基础结构
-    htim2.Instance = TIM2;  // 选择定时器2
-    htim2.Init.Prescaler = 71;  // 预分频器 PSC: (72 MHz / (71+1)) = 1 MHz -> 每个计数周期1微秒
-    htim2.Init.CounterMode = TIM_COUNTERMODE_UP;  // 向上计数模式
-    htim2.Init.Period = 999;  // 自动重载值 ARR: 1ms -> (1,000,000 Hz / 1000) - 1 = 999
-    htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;  // 时钟分频
-    htim2.Init.RepetitionCounter = 0;  // 重复计数器，通常设置为 0
+```c
 
-    // 3. 初始化定时器
-    if (HAL_TIM_Base_Init(&htim2) != HAL_OK)
-    {
-        // 错误处理
-        Error_Handler();
-    }
-
-    // 4. 启动定时器中断（如果需要中断）
-    if (HAL_TIM_Base_Start_IT(&htim2) != HAL_OK)
-    {
-        // 错误处理
-        Error_Handler();
-    }
-}
-
-// 定时器中断回调函数
+// 在此函数完成中断逻辑
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
-    if (htim->Instance == TIM2)
+    if (htim->Instance == TIM1)
     {
-        // 定时器2触发的回调函数
-        // 每隔1毫秒触发一次
+        print_flag = true;
     }
 }
 
+
+// 此处调用
+void TIM1_UP_TIM16_IRQHandler(void)
+{
+  /* USER CODE BEGIN TIM1_UP_TIM16_IRQn 0 */
+
+  /* USER CODE END TIM1_UP_TIM16_IRQn 0 */
+  HAL_TIM_PeriodElapsedCallback(&htim1);
+  HAL_TIM_IRQHandler(&htim1);
+  /* USER CODE BEGIN TIM1_UP_TIM16_IRQn 1 */
+
+  /* USER CODE END TIM1_UP_TIM16_IRQn 1 */
+}
 ```
