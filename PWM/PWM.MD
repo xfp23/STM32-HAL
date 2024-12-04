@@ -114,18 +114,12 @@
 假设 $\( f_{\text{TimerClock}} = 170 \, \text{MHz} \)，并希望 \( f_{\text{PWM}} = 1 \, \text{kHz} \)$ :
 
 1. 初步选择 $\( \text{PSC} = 1699 \)$ : 
-$\[
-   f_{\text{Timer}} = \frac{170 \, \text{MHz}}{1699 + 1} = 100 \, \text{kHz}
-   \]
-$
+
+$\[f_{\text{Timer}} = \frac{170 \, \text{MHz}}{1699 + 1} = 100 \, \text{kHz}\]$
 
 2. 计算 ARR：
 
-$
-\[
-\text{ARR} = \frac{f_{\text{Timer}}}{f_{\text{PWM}}} - 1 = \frac{100 \, \text{kHz}}{1 \, \text{kHz}} - 1 = 99
-\]
-$
+ $\[\text{ARR} = \frac{f_{\text{Timer}}}{f_{\text{PWM}}} - 1 = \frac{100 \, \text{kHz}}{1 \, \text{kHz}} - 1 = 99\]$ 
 
 最终：
 - $\( \text{PSC} = 1699 \)$ 
