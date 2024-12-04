@@ -108,7 +108,7 @@ $
 #### 3. 计算 PSC 和 ARR
 通过公式：
 
-$\[
+$ \[
 \text{PSC} + 1 = \frac{f_{\text{TimerClock}}}{f_{\text{DesiredTimer}}}
 \]$
 
