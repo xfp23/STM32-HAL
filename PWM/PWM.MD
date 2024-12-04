@@ -163,5 +163,9 @@ $
 // 必须在主循环之前调用此函数使能pwm输出
     HAL_TIM_PWM_Start(&htim2,TIM_CHANNEL_1);
 
-//
+
+
+// 此处设置占空比，
+//其中CCR = (ARR+1) * 想要的百分比
+__HAL_TIM_SET_COMPARE(&htim1,TIM_CHANNEL_1,CCR);
 ```
