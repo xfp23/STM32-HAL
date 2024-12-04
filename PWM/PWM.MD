@@ -78,11 +78,10 @@
 
 ### PWM 输出频率的计算公式：
 
-$
+
 \[
 f_{\text{PWM}} = \frac{f_{\text{TimerClock}}}{(\text{PSC} + 1) \times (\text{ARR} + 1)}
 \]
-$
 
 
 其中：
