@@ -12,7 +12,8 @@
 
 2. DAC输出的数值有寄存器`DORx`的数值和参考电压VREF决定的，公式为：
 
-DACoutput = DORx的数值/4096(2的12次方) * VREF+
+DACoutput = (DORx / 4096) * VREF+
+
 
 
 ## 配置DAC模块
@@ -232,7 +233,7 @@ HAL_StatusTypeDef HAL_DAC_SetValue(DAC_HandleTypeDef *hdac, uint32_t Channel, ui
 ```
 
 
-# 程序是示例:
+# 程序示例:
 
 
 ---
