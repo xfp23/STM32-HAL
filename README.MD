@@ -45,3 +45,11 @@
 
 # Watchdog (看门狗)
 [看门狗编程指南](./WATCHDOG/WATCHDOG.MD)
+
+# SDIO (FATFS)
+[SDIO编程指南](./SD/SDIO.MD)
+[SDIO使用FATFS中间件编程指南](./SD/SDIO_FATFS.MD)
+
+# USB-OTG
+
+[USB-OTG编程指南](./USB/USB_OTG.MD)
